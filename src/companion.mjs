@@ -16,7 +16,7 @@ const transport = new StdioClientTransport({ command: process.execPath, args: [f
 await local.connect(transport);
 
 async function post(path, body) {
-  if (Date.now() > session.expiresAt - 60_000) {
+  if (Date.now() > session.expiresAt - 300_000) {
     session = await loginWithCognito({ issuer: process.env.COGNITO_DOMAIN, clientId: process.env.COGNITO_COMPANION_CLIENT_ID });
   }
   const response = await fetch(new URL(path, origin), {

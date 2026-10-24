@@ -10,7 +10,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 const REQUEST_TTL_SECONDS = 120;
-const HEARTBEAT_TTL_SECONDS = 45;
+const HEARTBEAT_TTL_SECONDS = 120;
 
 export class DynamoBroker {
   constructor({ tableName, client = DynamoDBDocumentClient.from(new DynamoDBClient({})) }) {

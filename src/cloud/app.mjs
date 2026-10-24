@@ -98,7 +98,7 @@ export function createApp({ broker, authenticate, issuer, publicOrigin }) {
         const { agentId, requestId, result } = body;
         if (typeof agentId !== "string" || typeof requestId !== "string" || !/^[a-f0-9-]{36}$/.test(agentId) || !/^[a-f0-9-]{36}$/.test(requestId)) return json(res, 400, { error: "Invalid IDs" });
         if (await broker.activeAgent(userId) !== agentId) return json(res, 409, { error: "Agent is not active" });
-        if (JSON.stringify(result).length > MAX_RESULT) return json(res, 413, { error: "Result too large" });
+        if (!result || Buffer.byteLength(JSON.stringify(result), "utf8") > MAX_RESULT) return json(res, 413, { error: "Result too large" });
         await broker.completeRequest(userId, agentId, requestId, result);
         return json(res, 200, { ok: true });
       }
