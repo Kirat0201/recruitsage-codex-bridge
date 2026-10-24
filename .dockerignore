@@ -1,0 +1,11 @@
+.git
+.aws
+.env*
+.playwright-profile
+node_modules
+output
+docs
+scripts
+src/server.mjs
+src/companion.mjs
+*.log

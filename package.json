@@ -3,16 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Local read-only MCP bridge from signed-in RecruitSage pages to Codex",
+  "description": "Read-only RecruitSage MCP bridge with local browser and optional AWS broker",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "start": "node src/server.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "cloud": "node src/cloud/server.mjs",
+    "companion": "node src/companion.mjs",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1156.0",
+    "@aws-sdk/lib-dynamodb": "^3.1156.0",
     "@modelcontextprotocol/sdk": "^1.12.0",
+    "aws-jwt-verify": "^5.2.1",
     "pdfjs-dist": "^6.4.299",
     "playwright": "^1.52.0",
     "zod": "^4.6.7"

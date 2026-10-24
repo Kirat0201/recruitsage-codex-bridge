@@ -1,5 +1,6 @@
 import os from "node:os";
 import path from "node:path";
+import { existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
@@ -8,7 +9,17 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const PROFILE_DIR = path.join(ROOT, "..", ".playwright-profile");
+const LEGACY_PROFILE_DIR = path.join(ROOT, "..", ".playwright-profile");
+const USER_DATA_DIR = process.platform === "win32"
+  ? process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local")
+  : process.platform === "darwin"
+    ? path.join(os.homedir(), "Library", "Application Support")
+    : process.env.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state");
+const PROFILE_DIR = process.env.RECRUITSAGE_PROFILE_DIR
+  ? path.resolve(process.env.RECRUITSAGE_PROFILE_DIR)
+  : existsSync(LEGACY_PROFILE_DIR)
+    ? LEGACY_PROFILE_DIR
+    : path.join(USER_DATA_DIR, "recruitsage-mcp", "chromium-profile");
 const PORTAL_ORIGIN = "https://recruit.thapar.edu";
 const MAX_TEXT_CHARS = 24000;
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
@@ -44,6 +55,7 @@ function isPortalPage(value) {
 
 async function ensureBrowser() {
   if (!context) {
+    mkdirSync(path.dirname(PROFILE_DIR), { recursive: true, mode: 0o700 });
     try {
       context = await chromium.launchPersistentContext(PROFILE_DIR, {
         headless: false,
@@ -140,7 +152,7 @@ async function readDrivePdf(link) {
   const source = new URL(link.href);
   const match = source.hostname === "drive.google.com" && source.pathname.match(/^\/file\/d\/([A-Za-z0-9_-]+)\/view\/?$/);
   if (!match) return null;
-  const sourceUrl = source.toString();
+  const sourceUrl = `${source.origin}${source.pathname}`;
   try {
     const downloadUrl = new URL("https://drive.google.com/uc");
     downloadUrl.searchParams.set("export", "download");
@@ -232,7 +244,17 @@ server.registerTool("get_job_description", {
     const document = await readDrivePdf(link);
     if (document) documents.push(document);
   }
-  return asTextResult({ url: target, bodyText: pageData.bodyText, links: pageData.links, documents });
+  const safeLinks = pageData.links.flatMap((link) => {
+    try {
+      const parsed = new URL(link.href);
+      if (parsed.origin === PORTAL_ORIGIN) return [{ label: link.label, href: `${parsed.origin}${parsed.pathname}` }];
+      if (parsed.hostname === "drive.google.com" && /^\/file\/d\/[A-Za-z0-9_-]+\/view\/?$/.test(parsed.pathname)) {
+        return [{ label: link.label, href: `${parsed.origin}${parsed.pathname}` }];
+      }
+    } catch { /* Ignore malformed page links. */ }
+    return [];
+  });
+  return asTextResult({ url: target, bodyText: pageData.bodyText, links: safeLinks, documents });
 });
 
 server.registerTool("open_recruitsage", {

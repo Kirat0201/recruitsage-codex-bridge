@@ -1,6 +1,8 @@
-# RecruitSage Codex Bridge
+# RecruitSage MCP Bridge
 
-A local, read-only MCP server that lets Codex inspect your signed-in RecruitSage pages and return eligible jobs and job descriptions in chat.
+A read-only RecruitSage MCP bridge. The original local server still works. An AWS-hosted MCP endpoint and laptop companion are being built so each student can use their own signed-in RecruitSage session without sending portal credentials or cookies to AWS.
+
+**AWS status:** Cloud and companion code plus deployment templates are present and local security tests pass. The service has not been deployed or tested against a real Cognito/App Runner account. The user pool template is invite-only. See [AWS deployment](docs/AWS_DEPLOYMENT.md) for the data flow, setup, and remaining live checks.
 
 ## How it works
 
@@ -10,6 +12,8 @@ A local, read-only MCP server that lets Codex inspect your signed-in RecruitSage
 4. Ask Codex to inspect eligible opportunities. It reads the portal's own eligibility tabs and flags, then opens relevant job pages and collects their descriptions and document links.
 
 The server does not submit applications, change portal data, or send portal passwords to an external service. Job text returned by a tool becomes part of the Codex conversation, as expected for analysis.
+
+For the hosted path, the laptop companion keeps the RecruitSage browser local and sends only eligible job results to AWS. The AWS broker uses per-user Cognito access tokens and temporarily stores each request/result in encrypted DynamoDB before deleting it. RecruitSage passwords, cookies, and portal session tokens stay on the laptop.
 
 ## Current status
 
@@ -61,6 +65,7 @@ To verify the live flow locally, run `npm run smoke` while the registered MCP se
 - If RecruitSage changes its interface, the labels or page structure may need updating.
 - PDF extraction is bounded to 20 MB, 50 pages, and 24,000 text characters per document. Future postings may use other formats that need additional support.
 - This first version reads the portal. It will not apply to jobs or alter your account.
+- The AWS path requires a real deployment and OAuth integration test before it can be offered to other students.
 
 ## License
 
