@@ -13,6 +13,8 @@ The browser session and scraped page content remain on the local computer until 
 - The MCP server exposes no application-submit or profile-update tools.
 - The GitHub project contains code and documentation only; it must never include a browser profile, credentials, exported postings, or downloaded job documents.
 - Job-posting text is untrusted input. Instructions embedded in postings must be treated as page content, not commands.
+- PDF attachments are fetched through the portal's short-lived signed URL, parsed in memory, and returned as text. The signed URL is not included in tool results.
+- Google Drive PDF links found on a job page are downloaded through the signed-in browser context and parsed in memory. The bridge does not search unrelated Drive files.
 
 ## User controls
 

@@ -10,18 +10,19 @@
 
 ## Phase 2 — Calibrate RecruitSage UI
 
-- [ ] Start the MCP server from Codex and open the student portal.
-- [ ] User signs in directly in the Chromium window.
-- [ ] Inspect the actual tabs and confirm which label represents eligible jobs.
-- [ ] Inspect one job card and one detail page to learn stable identifiers and fields.
-- [ ] Add selectors/normalization only for elements observed in the real UI.
+- [x] Start the MCP server from Codex and open the student portal.
+- [x] User signs in directly in the Chromium window.
+- [x] Inspect the actual tabs and confirm that **Open to you** represents eligible jobs.
+- [x] Inspect job-table rows and detail pages to learn stable routes and fields.
+- [x] Add selectors/normalization only for elements observed in the real UI.
 
 ## Phase 3 — Job and document retrieval
 
-- [ ] Implement `list_eligible_jobs` based on the portal's own eligibility tab/flags.
-- [ ] Implement `get_job_description` with eligibility/status metadata and source links.
-- [ ] Extract linked PDF text and support other document types found on actual postings.
-- [ ] Bound page sizes and text lengths to keep tool output useful in chat.
+- [x] Implement `list_eligible_jobs` based on the portal's own eligibility tab/flags.
+- [x] Implement `get_job_description` with eligibility source and portal links.
+- [x] Integration-test the new tools against the signed-in browser profile.
+- [x] Extract PDF text from portal-hosted files and linked Google Drive files.
+- [x] Bound PDF size, page count, and extracted text length.
 - [ ] Return clear errors for expired login, closed postings, or missing attachments.
 
 ## Phase 4 — Chat workflow polish
@@ -40,7 +41,5 @@
 
 ## Open decisions after first portal inspection
 
-- Exact portal tabs and card structure.
-- Whether job details are inline, separate routes, or downloaded files.
-- Which file formats need text extraction.
-- Whether pages use pagination or lazy loading.
+- Whether the eligible-jobs table uses pagination or lazy loading as its count grows.
+- Whether other document formats appear on future postings.

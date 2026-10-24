@@ -13,4 +13,6 @@
 6. Sign in to RecruitSage in the visible Chromium window. Keep credentials in the website's own login form.
 7. Ask Codex to inspect the page and identify the Eligible tab. The first session is also how we calibrate the portal-specific job adapter.
 
+If `open_recruitsage` says the browser profile is already open, close the other Chrome for Testing window and retry. Do not delete `.playwright-profile/` to fix a profile lock; it stores the local sign-in.
+
 To remove the local session, stop the MCP server and delete `.playwright-profile/`. Never commit that directory.
