@@ -3,18 +3,49 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Local read-only MCP bridge from signed-in RecruitSage pages to Codex",
+  "description": "Local read-only API-first RecruitSage backend and MCP server",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "start": "node src/server.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "start": "node src/mcp.mjs",
+    "sync": "node src/cli.mjs sync",
+    "jobs:available": "node src/cli.mjs jobs available",
+    "jobs:applied": "node src/cli.mjs jobs applied",
+    "jobs:new": "node src/cli.mjs jobs new",
+    "jobs:closed": "node src/cli.mjs jobs closed",
+    "probe": "node src/cli.mjs probe",
+    "auth:bootstrap": "node src/auth-bootstrap.mjs",
+    "gmail:auth": "node src/gmail-auth-cli.mjs",
+    "gmail:configure": "node src/gmail-cli.mjs configure",
+    "gmail:sync": "node src/gmail-cli.mjs sync",
+    "gmail:docket": "node src/gmail-cli.mjs docket",
+    "career:sync": "node src/career-cli.mjs sync",
+    "career:briefing": "node src/career-cli.mjs briefing",
+    "career:nudge": "node src/career-nudge.mjs",
+    "mission:prepare": "node src/mission-cli.mjs prepare",
+    "mission:show": "node src/mission-cli.mjs show",
+    "projects:sync": "node src/project-memory-cli.mjs sync",
+    "projects:list": "node src/project-memory-cli.mjs list",
+    "resume-source:register": "node src/resume-source-cli.mjs register",
+    "resume-source:show": "node src/resume-source-cli.mjs show",
+    "application:prepare": "node src/application-cli.mjs prepare",
+    "application:submit": "node src/application-cli.mjs submit",
+    "docket:schedule": "node src/schedule.mjs",
+    "identity:configure": "node src/shortlist-cli.mjs identity",
+    "identity:import": "node src/shortlist-cli.mjs identity-import",
+    "shortlist:analyze": "node src/shortlist-cli.mjs analyze",
+    "shortlist:history": "node src/shortlist-cli.mjs history",
+    "test": "node --test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
+    "mammoth": "^1.10.0",
     "pdfjs-dist": "^6.4.299",
-    "playwright": "^1.52.0",
+    "read-excel-file": "^9.3.13",
     "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "fflate": "^0.8.3"
   }
 }

@@ -1,0 +1,11 @@
+import { mkdir, writeFile, chmod, unlink } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url)), label='com.harkirat.recruitsage-gmail-sync';
+const plist=path.join(os.homedir(),'Library/LaunchAgents',`${label}.plist`);
+const account=process.argv[3];
+if(!['enable','disable','status'].includes(process.argv[2])||!account)throw Error('Usage: npm run docket:schedule -- enable|disable|status ACCOUNT_EMAIL');
+if(process.argv[2]==='disable'){await import('node:child_process').then(({execFileSync})=>{try{execFileSync('launchctl',['bootout',`gui/${process.getuid()}`,plist],{stdio:'ignore'})}catch{}});await unlink(plist).catch(()=>{});console.log(JSON.stringify({enabled:false}));}
+else if(process.argv[2]==='status'){const {execFileSync}=await import('node:child_process');let enabled=false;try{execFileSync('launchctl',['print',`gui/${process.getuid()}/${label}`],{stdio:'ignore'});enabled=true}catch{}console.log(JSON.stringify({enabled,intervalMinutes:30,accountId:account}));}
+else{await mkdir(path.dirname(plist),{recursive:true,mode:0o700});const node=process.execPath,cli=path.join(root,'src/career-nudge.mjs');const esc=x=>x.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');const xml=`<?xml version="1.0"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>Label</key><string>${label}</string><key>ProgramArguments</key><array><string>${esc(node)}</string><string>${esc(cli)}</string><string>${esc(account)}</string></array><key>StartInterval</key><integer>1800</integer><key>RunAtLoad</key><false/><key>StandardOutPath</key><string>/tmp/recruitsage-docket-sync.log</string><key>StandardErrorPath</key><string>/tmp/recruitsage-docket-sync.err</string></dict></plist>`;await writeFile(plist,xml,{mode:0o600});const {execFileSync}=await import('node:child_process');try{execFileSync('launchctl',['bootout',`gui/${process.getuid()}`,plist],{stdio:'ignore'})}catch{}execFileSync('launchctl',['bootstrap',`gui/${process.getuid()}`,plist]);console.log(JSON.stringify({enabled:true,intervalMinutes:30,plist}));}

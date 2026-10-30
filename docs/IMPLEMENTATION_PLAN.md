@@ -1,5 +1,7 @@
 # Implementation plan
 
+> Historical v1 checklist. See README for the active API-first implementation and verification status.
+
 ## Phase 1 — Local MCP foundation
 
 - [x] Create a dedicated project structure and product brief.

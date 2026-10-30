@@ -1,5 +1,7 @@
 # First-run checklist
 
+> Historical v1 browser setup. Use the README for the current CLI-only API bridge.
+
 1. Install Node.js 20 or later.
 2. In this directory, run `npm install` and `npx playwright install chromium`.
 3. Register the MCP server in Codex with:

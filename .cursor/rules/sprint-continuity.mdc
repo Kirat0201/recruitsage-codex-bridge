@@ -1,0 +1,6 @@
+---
+description: Resume the active personal-use RecruitSage Sensei sprint from its PDF plan
+alwaysApply: true
+---
+
+Before doing new work in this project, read `output/pdf/plan.pdf` and the latest entry in `docs/PROGRESS.md`. Work from the first incomplete release gate, keep the job mission end to end, and record verified progress. Do not repeat completed audits without a concrete risk. A job is applied only when the portal returns a durable application record.

@@ -1,0 +1,51 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+test('MCP exposes compact cached job tools without authentication or a browser', async () => {
+  const serverPath = fileURLToPath(new URL('../src/mcp.mjs', import.meta.url));
+  const transport = new StdioClientTransport({ command: process.execPath, args: [serverPath] });
+  const client = new Client({ name: 'recruitsage-test', version: '0.1.0' });
+  try {
+    await client.connect(transport);
+    const names = (await client.listTools()).tools.map(tool => tool.name);
+    assert.ok(names.includes('sync_jobs'));
+    assert.ok(names.includes('list_applied_jobs'));
+    assert.ok(names.includes('get_job_packet'));
+    assert.ok(names.includes('get_document_excerpt'));
+    assert.ok(names.includes('sync_gmail'));
+    assert.ok(names.includes('get_placement_docket'));
+    assert.ok(names.includes('analyze_shortlist_email'));
+    assert.ok(names.includes('prepare_job_mission'));
+    assert.ok(names.includes('get_job_mission'));
+    assert.ok(names.includes('sync_project_memory'));
+    assert.ok(names.includes('get_project_memory'));
+    assert.ok(names.includes('register_resume_source'));
+    assert.ok(names.includes('get_resume_source'));
+    assert.ok(names.includes('prepare_job_application'));
+    assert.ok(names.includes('submit_job_application'));
+    assert.equal(names.length, 37);
+    const result = await client.callTool({ name: 'list_jobs', arguments: { limit: 2 } });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.source, 'local SQLite cache');
+    assert.ok(Array.isArray(data.jobs));
+    const packet = await client.callTool({ name: 'get_job_packet', arguments: { jobId: 'ffffffff-ffff-4fff-8fff-ffffffffffff', freshness: 'cache' } });
+    assert.equal(packet.isError, undefined);
+    assert.equal(JSON.parse(packet.content[0].text).state, 'not_cached');
+    const missingDocument = await client.callTool({ name: 'get_document_excerpt', arguments: { sha256: '0'.repeat(64) } });
+    assert.equal(missingDocument.isError, undefined);
+    assert.equal(JSON.parse(missingDocument.content[0].text).state, 'not_found');
+    const docket = await client.callTool({ name: 'get_placement_docket', arguments: { accountId: 'unconfigured@example.edu', freshness: 'cache' } });
+    assert.equal(docket.isError, undefined);
+    assert.equal(JSON.parse(docket.content[0].text).total, 0);
+    const sync = await client.callTool({ name: 'sync_gmail', arguments: { accountId: 'unconfigured@example.edu', freshness: 'cache' } });
+    assert.equal(sync.isError, true);
+    assert.match(sync.content[0].text, /not configured/);
+    const history = await client.callTool({ name: 'analyze_shortlist_email', arguments: { accountId: 'unconfigured@example.edu', jobId: 'ffffffff-ffff-4fff-8fff-ffffffffffff', mode: 'history' } });
+    assert.equal(history.isError, undefined);
+    assert.equal(JSON.parse(history.content[0].text).total, 0);
+  } finally { await client.close(); }
+});
