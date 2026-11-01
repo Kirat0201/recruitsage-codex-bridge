@@ -1,0 +1,15 @@
+---
+description: Approved resource-use safeguards for all RecruitSage work
+alwaysApply: true
+---
+
+# Resource-use safeguards
+
+1. Keep heavy tasks sequential. Do not overlap full tests, builds, document rendering or project scans.
+2. Test narrowly first. Run tests for changed code during development; run the full suite serially once before the final commit. Repeat only after relevant changes, failures or unresolved concerns. Use `node --test --test-concurrency=1` for the full suite.
+3. Bound every scan. Set limits for directories, files, depth and bytes read; report when results are truncated.
+4. Reuse fresh results. Check cache timestamps and completed checks before syncing, scanning or regenerating artifacts. Force refresh only when needed.
+5. Prevent duplicate syncs. Before live synchronization, check for an equivalent active run. Use a shared cross-process lock across scheduled, CLI and MCP runs when implemented. The runtime lock is not implemented yet; this rule does not claim otherwise. Implementing it remains a separate change requiring authorization.
+6. Restart services once. Batch changes and restart the affected service after local checks pass. Restart again only when a new change requires it.
+7. Finish the core outcome first. Complete the agreed release gate before adding adjacent features unless the owner explicitly expands scope. For a review or maintenance task, use that task's agreed outcome.
+8. Measure before blaming. If resource use spikes, stop launching additional heavy work and inspect available CPU, memory and process evidence. Label unverified explanations as hypotheses.
