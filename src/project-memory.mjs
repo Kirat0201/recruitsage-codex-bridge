@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { opendir, readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { cachedJob } from './store.mjs';
 
@@ -27,12 +27,15 @@ async function textFile(file, limit = 24_000) {
   } catch { return ''; }
 }
 
-async function walkSignals(root, depth = 0, state = { source: 0, tests: 0, files: 0, extensions: new Map() }) {
-  if (depth > 4 || state.files >= 800) return state;
-  let entries = [];
-  try { entries = await readdir(root, { withFileTypes: true }); } catch { return state; }
-  for (const entry of entries) {
-    if (state.files >= 800 || entry.isSymbolicLink() || SKIP.has(entry.name)) continue;
+async function walkSignals(root, depth = 0, state = { source: 0, tests: 0, files: 0, entries: 0, scanLimited: false, extensions: new Map() }) {
+  if (depth > 4 || state.entries >= 800) { state.scanLimited = true; return state; }
+  let directory;
+  try { directory = await opendir(root); } catch { return state; }
+  // Stream entries and count directories too: a file-only cap permits huge empty trees.
+  for await (const entry of directory) {
+    if (state.entries >= 800) { state.scanLimited = true; break; }
+    state.entries++;
+    if (entry.isSymbolicLink() || SKIP.has(entry.name)) continue;
     const full = path.join(root, entry.name);
     if (entry.isDirectory()) { await walkSignals(full, depth + 1, state); continue; }
     state.files++;
@@ -93,7 +96,7 @@ async function inspectProject(category, entry, root) {
   ].filter(Boolean);
   const payload = {
     projectPath, category, name: entry.name, summary: readmeSummary(readme), technologies,
-    evidenceRefs, signals: { sourceFiles: signals.source, testFiles: signals.tests, scannedFiles: signals.files, hasGit: Boolean(await stat(path.join(projectPath, '.git')).catch(() => null)) },
+    evidenceRefs, signals: { sourceFiles: signals.source, testFiles: signals.tests, scannedFiles: signals.files, scannedEntries: signals.entries, scanLimited: signals.scanLimited, hasGit: Boolean(await stat(path.join(projectPath, '.git')).catch(() => null)) },
     assessment: { state: missingEvidence.length <= 1 ? 'resume_ready' : missingEvidence.length <= 3 ? 'needs_evidence' : 'weak_evidence', missingEvidence },
   };
   const fingerprint = createHash('sha256').update(JSON.stringify(payload)).digest('hex');

@@ -30,3 +30,19 @@ test('project memory persists evidence, ranks it, and exposes honest gaps', asyn
     reopened.close();
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+
+test('project scan bounds directory-only trees and reports partial evidence', async () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'rs-project-budget-'));
+  const root = path.join(dir, 'projects'), project = path.join(root, 'tools', 'wide');
+  mkdirSync(project, { recursive: true });
+  for (let i = 0; i < 805; i++) mkdirSync(path.join(project, `empty-${i}`));
+  const db = openStore(path.join(dir, 'memory.sqlite'));
+  try {
+    await syncProjectMemory(db, { root });
+    const { signals } = getProjectMemory(db).projects[0];
+    assert.equal(signals.scannedFiles, 0);
+    assert.equal(signals.scannedEntries, 800);
+    assert.equal(signals.scanLimited, true);
+  } finally { db.close(); rmSync(dir, { recursive: true, force: true }); }
+});
